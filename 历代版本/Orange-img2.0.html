@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片批量压缩工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-upload-area {
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .file-upload-area:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: #2980b9;
+        }
+
+        .file-upload-area i {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .file-upload-area h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        #fileInput, #folderInput {
+            display: none;
+        }
+
+        .upload-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .upload-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+
+        .upload-option:hover {
+            border-color: #3498db;
+            background-color: rgba(52, 152, 219, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .upload-option.active {
+            border-color: #3498db;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .option-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .option-text {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .quality-control {
+            margin-bottom: 25px;
+        }
+
+        .quality-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #qualitySlider {
+            flex-grow: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        #qualitySlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #qualityValue {
+            font-weight: bold;
+            color: #3498db;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .size-control {
+            margin-bottom: 25px;
+        }
+
+        .size-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .size-option {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .size-option:hover {
+            border-color: #3498db;
+        }
+
+        .size-option.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #compressBtn {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        #compressBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        #compressBtn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #downloadAllBtn {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        #downloadAllBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        #downloadAllBtn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #clearListBtn {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        #clearListBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .icon-clear {
+            font-size: 18px;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+        }
+
+        .preview-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-container {
+            margin-bottom: 25px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .image-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .image-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .image-item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .image-preview {
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .image-name {
+            font-weight: 600;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .image-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .download-btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .download-btn:hover {
+            background: #2980b9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        /* 图标样式 */
+        .icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .icon-upload { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E"); }
+        .icon-compress { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z'/%3E%3C/svg%3E"); }
+        .icon-download { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/%3E%3C/svg%3E"); }
+        .icon-image { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237f8c8d'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E"); }
+        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232ecc71'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
+
+        /* 新增控件样式 */
+        .compression-control,
+        .format-control,
+        .advanced-control {
+            margin-bottom: 25px;
+        }
+
+        .compression-control label,
+        .format-control label,
+        .advanced-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .mode-options,
+        .format-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .format-options {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .mode-option,
+        .format-option {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .mode-option:hover,
+        .format-option:hover {
+            border-color: #3498db;
+        }
+
+        .mode-option.active,
+        .format-option.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .advanced-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eaeaea;
+        }
+
+        .advanced-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .advanced-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .advanced-option label {
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .advanced-option input[type="range"] {
+            flex-grow: 1;
+        }
+
+        #pngCompressionValue {
+            min-width: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        /* 质量报告样式 */
+        .quality-report {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-title::before {
+            content: "📊";
+            font-size: 1.1rem;
+        }
+
+        .report-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .report-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .report-stat {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #eaeaea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .report-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .report-stat .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .report-stat .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        #psnrValue {
+            color: #3498db;
+        }
+
+        #sizeReductionValue {
+            color: #2ecc71;
+        }
+
+        #compressionRatioValue {
+            color: #9b59b6;
+        }
+
+        #qualityLevelValue {
+            color: #e74c3c;
+        }
+
+        .report-details {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>图片批量压缩工具</h1>
+            <p class="subtitle">上传多张图片，一键压缩优化，减小文件体积</p>
+        </header>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="file-upload-area" id="uploadArea">
+                    <div class="icon icon-upload"></div>
+                    <h3>点击或拖拽上传图片</h3>
+                    <p>支持 JPG、PNG、WebP 格式，最多 50 张</p>
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple>
+                    <div class="upload-options">
+                        <div class="upload-option" id="uploadFilesOption">
+                            <div class="option-icon">📄</div>
+                            <div class="option-text">选择文件</div>
+                        </div>
+                        <div class="upload-option" id="uploadFolderOption">
+                            <div class="option-icon">📁</div>
+                            <div class="option-text">选择文件夹</div>
+                        </div>
+                    </div>
+                    <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+                </div>
+
+                <div class="quality-control">
+                    <label>压缩质量: <span id="qualityValue">80</span>%</label>
+                    <div class="slider-container">
+                        <input type="range" id="qualitySlider" min="10" max="100" value="80">
+                    </div>
+                </div>
+
+                <div class="size-control">
+                    <label>最大尺寸限制:</label>
+                    <div class="size-options">
+                        <div class="size-option" data-size="original">原尺寸</div>
+                        <div class="size-option active" data-size="1920">1920px</div>
+                        <div class="size-option" data-size="1280">1280px</div>
+                        <div class="size-option" data-size="800">800px</div>
+                        <div class="size-option" data-size="640">640px</div>
+                        <div class="size-option" data-size="400">400px</div>
+                    </div>
+                </div>
+
+                <div class="compression-control">
+                    <label>压缩模式:</label>
+                    <div class="mode-options">
+                        <div class="mode-option active" data-mode="lossless">无损压缩</div>
+                        <div class="mode-option" data-mode="high">高质量</div>
+                        <div class="mode-option" data-mode="balanced">平衡</div>
+                        <div class="mode-option" data-mode="max">最大压缩</div>
+                    </div>
+                </div>
+
+                <div class="format-control">
+                    <label>输出格式:</label>
+                    <div class="format-options">
+                        <div class="format-option" data-format="original">保持原格式</div>
+                        <div class="format-option active" data-format="best">最佳格式</div>
+                        <div class="format-option" data-format="webp">WebP</div>
+                        <div class="format-option" data-format="jpeg">JPEG</div>
+                        <div class="format-option" data-format="png">PNG</div>
+                    </div>
+                </div>
+
+                <div class="advanced-control">
+                    <label>高级选项:</label>
+                    <div class="advanced-options">
+                        <div class="advanced-option">
+                            <input type="checkbox" id="progressiveJpeg" checked>
+                            <label for="progressiveJpeg">渐进式JPEG</label>
+                        </div>
+                        <div class="advanced-option">
+                            <label for="pngCompression">PNG压缩级别:</label>
+                            <input type="range" id="pngCompression" min="0" max="9" value="9">
+                            <span id="pngCompressionValue">9</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="compressBtn" disabled>
+                        <div class="icon icon-compress"></div>
+                        开始压缩
+                    </button>
+                    <button id="downloadAllBtn" disabled>
+                        <div class="icon icon-download"></div>
+                        下载全部
+                    </button>
+                    <button id="clearListBtn">
+                        <div class="icon icon-clear">🗑️</div>
+                        清空列表
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h2 class="section-title">
+                    <div class="icon icon-image"></div>
+                    图片预览
+                </h2>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalCount">0</div>
+                        <div class="stat-label">总图片数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="compressedCount">0</div>
+                        <div class="stat-label">已压缩</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSize">0 KB</div>
+                        <div class="stat-label">原始大小</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="compressedSize">0 KB</div>
+                        <div class="stat-label">压缩后大小</div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>压缩进度</span>
+                        <span id="progressText">0/0</span>
+                    </div>
+                </div>
+
+                <div class="quality-report" id="qualityReport" style="display: none;">
+                    <h3 class="report-title">质量评估报告</h3>
+                    <div class="report-content">
+                        <div class="report-stats">
+                            <div class="report-stat">
+                                <div class="stat-label">PSNR值</div>
+                                <div class="stat-value" id="psnrValue">- dB</div>
+                            </div>
+                            <div class="report-stat">
+                                <div class="stat-label">文件节省</div>
+                                <div class="stat-value" id="sizeReductionValue">- %</div>
+                            </div>
+                            <div class="report-stat">
+                                <div class="stat-label">压缩比</div>
+                                <div class="stat-value" id="compressionRatioValue">-</div>
+                            </div>
+                            <div class="report-stat">
+                                <div class="stat-label">质量等级</div>
+                                <div class="stat-value" id="qualityLevelValue">-</div>
+                            </div>
+                        </div>
+                        <div class="report-details">
+                            <div class="detail-item">
+                                <span class="detail-label">处理时间:</span>
+                                <span class="detail-value" id="processingTimeValue">- ms</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">压缩模式:</span>
+                                <span class="detail-value" id="compressionModeValue">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">输出格式:</span>
+                                <span class="detail-value" id="outputFormatValue">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="image-list" id="imageList">
+                    <div class="empty-state">
+                        <div class="icon icon-image"></div>
+                        <p>上传图片后，这里会显示预览和压缩结果</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 图片批量压缩工具 | 使用 Canvas API 实现，所有处理均在浏览器本地完成，保护隐私</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let images = [];
+        let maxSize = 1920;
+        let quality = 0.8;
+        let compressionMode = 'balanced'; // 压缩模式: 'lossless', 'high', 'balanced', 'max'
+        let outputFormat = 'best'; // 输出格式: 'original', 'best', 'webp', 'jpeg', 'png'
+        let preserveMetadata = false; // 是否保留元数据
+        let useProgressiveJPEG = true; // 是否使用渐进式JPEG
+        let pngCompressionLevel = 9; // PNG压缩级别 0-9
+        let supportsWebP = false; // 浏览器是否支持WebP
+
+        // DOM 元素
+        const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const compressBtn = document.getElementById('compressBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const imageList = document.getElementById('imageList');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const totalCount = document.getElementById('totalCount');
+        const compressedCount = document.getElementById('compressedCount');
+        const totalSize = document.getElementById('totalSize');
+        const compressedSize = document.getElementById('compressedSize');
+        const sizeOptions = document.querySelectorAll('.size-option');
+        const uploadFilesOption = document.getElementById('uploadFilesOption');
+        const uploadFolderOption = document.getElementById('uploadFolderOption');
+        const qualityReport = document.getElementById('qualityReport');
+        const psnrValue = document.getElementById('psnrValue');
+        const sizeReductionValue = document.getElementById('sizeReductionValue');
+        const compressionRatioValue = document.getElementById('compressionRatioValue');
+        const qualityLevelValue = document.getElementById('qualityLevelValue');
+        const processingTimeValue = document.getElementById('processingTimeValue');
+        const compressionModeValue = document.getElementById('compressionModeValue');
+        const outputFormatValue = document.getElementById('outputFormatValue');
+
+        // 质量评估类
+        class QualityAssessor {
+            // 计算PSNR（峰值信噪比）
+            static calculatePSNR(originalData, compressedData) {
+                if (originalData.length !== compressedData.length) return 0;
+
+                let mse = 0;
+                for (let i = 0; i < originalData.length; i++) {
+                    const diff = originalData[i] - compressedData[i];
+                    mse += diff * diff;
+                }
+                mse /= originalData.length;
+
+                if (mse === 0) return Infinity;
+                return 10 * Math.log10((255 * 255) / mse);
+            }
+
+            // 获取图片数据（用于PSNR计算）
+            static async getImageData(imageUrl) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                        resolve(imageData.data);
+                    };
+                    img.onerror = () => resolve(null);
+                    img.src = imageUrl;
+                });
+            }
+
+            // 比较两张图片（计算PSNR）
+            static async compareImages(originalUrl, compressedUrl) {
+                const [originalData, compressedData] = await Promise.all([
+                    this.getImageData(originalUrl),
+                    this.getImageData(compressedUrl)
+                ]);
+
+                if (!originalData || !compressedData) return 0;
+
+                // 如果尺寸不同，返回0
+                const originalCanvas = document.createElement('canvas');
+                const originalImg = new Image();
+                originalImg.src = originalUrl;
+                await new Promise(resolve => {
+                    originalImg.onload = resolve;
+                });
+
+                const compressedCanvas = document.createElement('canvas');
+                const compressedImg = new Image();
+                compressedImg.src = compressedUrl;
+                await new Promise(resolve => {
+                    compressedImg.onload = resolve;
+                });
+
+                if (originalImg.width !== compressedImg.width || originalImg.height !== compressedImg.height) {
+                    return 0;
+                }
+
+                return this.calculatePSNR(originalData, compressedData);
+            }
+
+            // 生成质量报告
+            static generateReport(originalSize, compressedSize, psnr, processingTime, mode, format) {
+                const sizeReduction = ((originalSize - compressedSize) / originalSize) * 100;
+                const compressionRatio = compressedSize / originalSize;
+
+                return {
+                    psnr: psnr.toFixed(2),
+                    sizeReduction: sizeReduction.toFixed(1),
+                    compressionRatio: compressionRatio.toFixed(3),
+                    qualityLevel: this.getQualityLevel(psnr, sizeReduction),
+                    processingTime: processingTime,
+                    mode: mode,
+                    format: format
+                };
+            }
+
+            static getQualityLevel(psnr, reduction) {
+                if (psnr > 40) return '无损级别';
+                if (psnr > 35 && reduction > 50) return '优秀';
+                if (psnr > 30) return '良好';
+                if (psnr > 25) return '一般';
+                return '较差';
+            }
+        }
+
+        // WebP支持检测
+        function checkWebPSupport() {
+            return new Promise((resolve) => {
+                const webpData = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+                const img = new Image();
+                img.onload = () => {
+                    supportsWebP = (img.width === 2 && img.height === 1);
+                    resolve(supportsWebP);
+                };
+                img.onerror = () => {
+                    supportsWebP = false;
+                    resolve(false);
+                };
+                img.src = webpData;
+                setTimeout(() => {
+                    supportsWebP = false;
+                    resolve(false);
+                }, 100);
+            });
+        }
+
+        // 获取最佳输出格式
+        function getBestOutputFormat(originalType) {
+            if (outputFormat === 'original') return originalType;
+            if (outputFormat === 'best') {
+                if (supportsWebP && originalType !== 'image/gif') return 'webp';
+                if (originalType === 'image/png') return 'png';
+                return 'jpeg';
+            }
+            return outputFormat;
+        }
+
+        // 重置压缩状态
+        function resetCompressionState() {
+            let needsReset = false;
+
+            images.forEach(img => {
+                if (img.compressed) {
+                    // 释放URL对象
+                    if (img.compressedUrl && typeof img.compressedUrl === 'string' && img.compressedUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(img.compressedUrl);
+                    }
+
+                    img.compressed = false;
+                    img.compressedUrl = null;
+                    img.compressedSize = 0;
+                    img.format = null;
+                    img.mimeType = null;
+                    needsReset = true;
+                }
+            });
+
+            if (needsReset) {
+                updateUI();
+                console.log('压缩设置已更改，已重置所有图片的压缩状态');
+            }
+        }
+
+        // 获取压缩配置
+        function getCompressionConfig(format, originalType) {
+            const config = {
+                format: format,
+                lossless: false,
+                quality: quality,
+                progressive: useProgressiveJPEG,
+                pngCompression: pngCompressionLevel / 10
+            };
+
+            switch (compressionMode) {
+                case 'lossless':
+                    config.lossless = true;
+                    config.quality = 1.0;
+                    if (format === 'webp') config.lossless = 1;
+                    break;
+                case 'high':
+                    config.quality = Math.max(0.9, quality);
+                    break;
+                case 'balanced':
+                    config.quality = quality;
+                    break;
+                case 'max':
+                    config.quality = Math.max(0.3, quality * 0.7);
+                    break;
+            }
+
+            // 根据格式调整配置
+            if (format === 'png') {
+                config.quality = undefined; // PNG忽略quality参数
+            }
+
+            return config;
+        }
+
+        // 事件监听器
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.15)';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFiles(e.target.files);
+                // 激活文件选择选项
+                uploadFilesOption.classList.add('active');
+                uploadFolderOption.classList.remove('active');
+            }
+        });
+
+        folderInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFiles(e.target.files);
+                // 激活文件夹选择选项
+                uploadFolderOption.classList.add('active');
+                uploadFilesOption.classList.remove('active');
+            }
+        });
+
+        // 上传选项点击事件
+        uploadFilesOption.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡到uploadArea
+            fileInput.click();
+            uploadFilesOption.classList.add('active');
+            uploadFolderOption.classList.remove('active');
+        });
+
+        uploadFolderOption.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡到uploadArea
+            folderInput.click();
+            uploadFolderOption.classList.add('active');
+            uploadFilesOption.classList.remove('active');
+        });
+
+        qualitySlider.addEventListener('input', (e) => {
+            quality = e.target.value / 100;
+            qualityValue.textContent = e.target.value;
+        });
+
+        qualitySlider.addEventListener('change', (e) => {
+            resetCompressionState();
+        });
+
+        sizeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                sizeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                maxSize = option.dataset.size === 'original' ? null : parseInt(option.dataset.size);
+                resetCompressionState();
+            });
+        });
+
+        compressBtn.addEventListener('click', compressAllImages);
+        downloadAllBtn.addEventListener('click', downloadAllImages);
+
+        // 压缩模式选择
+        document.querySelectorAll('.mode-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.mode-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                compressionMode = option.dataset.mode;
+                console.log('压缩模式:', compressionMode);
+                resetCompressionState();
+            });
+        });
+
+        // 输出格式选择
+        document.querySelectorAll('.format-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.format-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                outputFormat = option.dataset.format;
+                console.log('输出格式:', outputFormat);
+                resetCompressionState();
+            });
+        });
+
+        // 渐进式JPEG选项
+        document.getElementById('progressiveJpeg').addEventListener('change', (e) => {
+            useProgressiveJPEG = e.target.checked;
+            resetCompressionState();
+        });
+
+        // PNG压缩级别
+        const pngCompressionSlider = document.getElementById('pngCompression');
+        const pngCompressionValue = document.getElementById('pngCompressionValue');
+
+        pngCompressionSlider.addEventListener('input', (e) => {
+            pngCompressionLevel = parseInt(e.target.value);
+            pngCompressionValue.textContent = pngCompressionLevel;
+        });
+
+        pngCompressionSlider.addEventListener('change', (e) => {
+            resetCompressionState();
+        });
+
+        // 处理上传的文件
+        function handleFiles(files) {
+            const imageFiles = Array.from(files).filter(file =>
+                file.type.startsWith('image/') &&
+                ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+            );
+
+            if (imageFiles.length === 0) {
+                alert('请选择有效的图片文件（JPG、PNG、WebP格式）');
+                return;
+            }
+
+            // 限制最多50张
+            const filesToProcess = imageFiles.slice(0, 50);
+
+            if (imageFiles.length > 50) {
+                alert(`最多支持50张图片，已选择前50张`);
+            }
+
+            // 清空之前的图片
+            images = [];
+
+            // 读取图片文件
+            filesToProcess.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        images.push({
+                            id: Date.now() + index,
+                            file: file,
+                            originalUrl: e.target.result,
+                            compressedUrl: null,
+                            name: file.name,
+                            size: file.size,
+                            compressedSize: 0,
+                            width: img.width,
+                            height: img.height,
+                            compressed: false,
+                            compressing: false
+                        });
+
+                        // 更新UI
+                        updateUI();
+
+                        // 如果所有图片都已加载，启用压缩按钮
+                        if (images.length === filesToProcess.length) {
+                            compressBtn.disabled = false;
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 更新UI
+        function updateUI() {
+            totalCount.textContent = images.length;
+
+            const totalSizeBytes = images.reduce((sum, img) => sum + img.size, 0);
+            totalSize.textContent = formatFileSize(totalSizeBytes);
+
+            const compressedImages = images.filter(img => img.compressed);
+            compressedCount.textContent = compressedImages.length;
+
+            const compressedSizeBytes = compressedImages.reduce((sum, img) => sum + img.compressedSize, 0);
+            compressedSize.textContent = formatFileSize(compressedSizeBytes);
+
+            // 更新图片列表
+            renderImageList();
+
+            // 更新下载按钮状态
+            downloadAllBtn.disabled = compressedImages.length === 0;
+        }
+
+        // 渲染图片列表
+        function renderImageList() {
+            if (images.length === 0) {
+                imageList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon icon-image"></div>
+                        <p>上传图片后，这里会显示预览和压缩结果</p>
+                    </div>
+                `;
+                return;
+            }
+
+            imageList.innerHTML = images.map(img => `
+                <div class="image-item" data-id="${img.id}">
+                    <div class="image-preview">
+                        <img src="${img.compressedUrl || img.originalUrl}" alt="${img.name}">
+                    </div>
+                    <div class="image-info">
+                        <div class="image-name">${img.name}</div>
+                        <div class="image-stats">
+                            <span>${img.width} × ${img.height}</span>
+                            <span>${formatFileSize(img.size)}</span>
+                        </div>
+                        ${img.compressed ? `
+                            <div class="image-stats">
+                                <span>压缩后: ${formatFileSize(img.compressedSize)}</span>
+                                <span style="color: #2ecc71;">节省: ${calculateSavings(img.size, img.compressedSize)}%</span>
+                            </div>
+                            <div class="image-stats">
+                                <span>格式: ${img.format || '未知'}</span>
+                                <span>模式: ${compressionMode === 'lossless' ? '无损' : compressionMode === 'high' ? '高质量' : compressionMode === 'balanced' ? '平衡' : '最大压缩'}</span>
+                            </div>
+                            <button class="download-btn" data-id="${img.id}">
+                                <div class="icon icon-download" style="background-color: white;"></div>
+                                下载压缩版
+                            </button>
+                        ` : img.compressing ? `
+                            <div class="image-stats">
+                                <span style="color: #3498db;">压缩中...</span>
+                            </div>
+                        ` : `
+                            <div class="image-stats">
+                                <span>等待压缩</span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+
+            // 添加下载按钮事件
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.closest('.download-btn').dataset.id);
+                    downloadImage(id);
+                });
+            });
+        }
+
+        // 压缩单张图片
+        async function compressImage(image, options = {}) {
+            const format = options.format || getBestOutputFormat(image.file.type);
+            const config = getCompressionConfig(format, image.file.type);
+
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const img = new Image();
+                img.onload = async () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 如果设置了最大尺寸，调整图片大小
+                    if (maxSize && (width > maxSize || height > maxSize)) {
+                        if (width > height) {
+                            height = Math.round(height * maxSize / width);
+                            width = maxSize;
+                        } else {
+                            width = Math.round(width * maxSize / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // 绘制图片到canvas
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 确定MIME类型和压缩选项
+                    let mimeType, blobOptions;
+
+                    switch (format) {
+                        case 'webp':
+                            mimeType = 'image/webp';
+                            blobOptions = {
+                                quality: config.quality,
+                                ...(config.lossless && { lossless: 1 })
+                            };
+                            break;
+                        case 'png':
+                            mimeType = 'image/png';
+                            blobOptions = config.pngCompression !== undefined ?
+                                { compressionLevel: config.pngCompression } : {};
+                            break;
+                        case 'jpeg':
+                            mimeType = 'image/jpeg';
+                            blobOptions = {
+                                quality: config.quality,
+                                progressive: config.progressive
+                            };
+                            break;
+                        default:
+                            // 保持原格式
+                            mimeType = image.file.type || 'image/jpeg';
+                            blobOptions = { quality: config.quality };
+                    }
+
+                    // 使用toBlob获取压缩后的Blob
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            // 如果toBlob失败，回退到toDataURL
+                            const dataUrl = canvas.toDataURL(mimeType, config.quality);
+                            const base64Length = dataUrl.length - (dataUrl.indexOf(',') + 1);
+                            const compressedSizeBytes = Math.round(base64Length * 0.75);
+
+                            resolve({
+                                compressedUrl: dataUrl,
+                                compressedSize: compressedSizeBytes,
+                                width: width,
+                                height: height,
+                                format: format,
+                                mimeType: mimeType
+                            });
+                            return;
+                        }
+
+                        const compressedUrl = URL.createObjectURL(blob);
+                        resolve({
+                            compressedUrl: compressedUrl,
+                            compressedSize: blob.size,
+                            width: width,
+                            height: height,
+                            format: format,
+                            mimeType: mimeType
+                        });
+                    }, mimeType, blobOptions);
+                };
+                img.src = image.originalUrl;
+            });
+        }
+
+        // 压缩所有图片
+        async function compressAllImages() {
+            compressBtn.disabled = true;
+            compressBtn.innerHTML = '<div class="icon icon-compress"></div>压缩中...';
+
+            const imagesToCompress = images.filter(img => !img.compressed);
+            let completed = 0;
+
+            for (const img of imagesToCompress) {
+                // 释放之前创建的URL对象，避免内存泄漏（如果存在）
+                if (img.compressedUrl && typeof img.compressedUrl === 'string' && img.compressedUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(img.compressedUrl);
+                }
+
+                img.compressing = true;
+                updateUI();
+
+                try {
+                    const result = await compressImage(img);
+
+                    img.compressedUrl = result.compressedUrl;
+                    img.compressedSize = result.compressedSize;
+                    img.width = result.width;
+                    img.height = result.height;
+                    img.compressed = true;
+                    img.compressing = false;
+                    img.format = result.format;
+                    img.mimeType = result.mimeType;
+
+                    completed++;
+
+                    // 更新进度
+                    const progressPercent = Math.round((completed / imagesToCompress.length) * 100);
+                    progressFill.style.width = `${progressPercent}%`;
+                    progressText.textContent = `${completed}/${imagesToCompress.length}`;
+
+                    updateUI();
+                } catch (error) {
+                    console.error('压缩图片失败:', error);
+                    img.compressing = false;
+                    updateUI();
+                }
+            }
+
+            // 重置按钮状态
+            compressBtn.disabled = false;
+            compressBtn.innerHTML = '<div class="icon icon-compress"></div>开始压缩';
+
+            // 显示完成提示
+            if (completed > 0) {
+                alert(`压缩完成！已成功压缩 ${completed} 张图片`);
+            }
+        }
+
+        // 下载单张图片
+        function downloadImage(id) {
+            const image = images.find(img => img.id === id);
+            if (!image || !image.compressedUrl) return;
+
+            const link = document.createElement('a');
+            link.href = image.compressedUrl;
+
+            // 生成文件名
+            const format = image.format || 'jpg';
+            const extensionMap = {
+                'webp': 'webp',
+                'jpeg': 'jpg',
+                'jpg': 'jpg',
+                'png': 'png'
+            };
+            const extension = extensionMap[format.toLowerCase()] || 'jpg';
+            const fileName = image.name.replace(/\.[^/.]+$/, "") + '_compressed.' + extension;
+
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 下载所有压缩后的图片
+        function downloadAllImages() {
+            const compressedImages = images.filter(img => img.compressed);
+            if (compressedImages.length === 0) return;
+
+            // 逐个下载
+            compressedImages.forEach((img, index) => {
+                setTimeout(() => {
+                    downloadImage(img.id);
+                }, index * 300); // 间隔300ms，避免浏览器限制
+            });
+
+            alert(`开始下载 ${compressedImages.length} 张图片，请等待浏览器下载完成`);
+        }
+
+        // 计算节省百分比
+        function calculateSavings(originalSize, compressedSize) {
+            const savings = ((originalSize - compressedSize) / originalSize) * 100;
+            return Math.round(savings);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 初始化
+        (async function init() {
+            await checkWebPSupport();
+            console.log('WebP支持:', supportsWebP ? '是' : '否');
+            updateUI();
+        })();
+    </script>
+</body>
+</html>
